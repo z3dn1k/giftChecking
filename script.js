@@ -1,12 +1,22 @@
 // Wait for Firebase to be initialized
 function waitForFirebase() {
     return new Promise(resolve => {
-        const checkInterval = setInterval(() => {
-            if (window.firebaseDB) {
+        if (window.firebaseReady && window.firebaseDB) {
+            resolve();
+        } else {
+            const checkInterval = setInterval(() => {
+                if (window.firebaseReady && window.firebaseDB) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 50);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
                 clearInterval(checkInterval);
-                resolve();
-            }
-        }, 100);
+                console.error('Firebase initialization timeout');
+            }, 5000);
+        }
     });
 }
 
@@ -39,37 +49,43 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 
 // Initialize Firebase connection
 async function initializeFirebase() {
-    await waitForFirebase();
-    
-    const firebaseAPI = window.firebaseDB;
-    db = firebaseAPI.db;
-    collection = firebaseAPI.collection;
-    addDoc = firebaseAPI.addDoc;
-    query = firebaseAPI.query;
-    onSnapshot = firebaseAPI.onSnapshot;
-    deleteDoc = firebaseAPI.deleteDoc;
-    doc = firebaseAPI.doc;
-    updateDoc = firebaseAPI.updateDoc;
-    
-    firebaseReady = true;
-    
-    // Set up real-time listener
-    setupRealtimeListener();
-    
-    // Event listeners
-    addBtn.addEventListener('click', addGift);
-    giftNameInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
-    recipientInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
-    priceInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+    try {
+        await waitForFirebase();
+        
+        const firebaseAPI = window.firebaseDB;
+        db = firebaseAPI.db;
+        collection = firebaseAPI.collection;
+        addDoc = firebaseAPI.addDoc;
+        query = firebaseAPI.query;
+        onSnapshot = firebaseAPI.onSnapshot;
+        deleteDoc = firebaseAPI.deleteDoc;
+        doc = firebaseAPI.doc;
+        updateDoc = firebaseAPI.updateDoc;
+        
+        firebaseReady = true;
+        console.log('✅ Firebase initialized successfully');
+        
+        // Set up real-time listener
+        setupRealtimeListener();
+        
+        // Event listeners
+        addBtn.addEventListener('click', addGift);
+        giftNameInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+        recipientInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+        priceInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            renderGifts();
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderGifts();
+            });
         });
-    });
+    } catch (error) {
+        console.error('❌ Failed to initialize Firebase:', error);
+        alert('❌ Failed to connect to Firebase. Please refresh the page.');
+    }
 }
 
 // Set up real-time listener for Firestore
@@ -290,7 +306,8 @@ function escapeHtml(text) {
 }
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', () => {
-    initializeFirebase();
-    giftNameInput.focus();
+initializeFirebase().then(() => {
+    console.log('✅ App ready!');
+}).catch(error => {
+    console.error('❌ Initialization error:', error);
 });

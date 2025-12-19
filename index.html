@@ -139,10 +139,15 @@
         updateDoc
       };
 
-      // Load the script after Firebase is initialized
-      const script = document.createElement('script');
-      script.src = 'script.js';
-      document.body.appendChild(script);
+      // Signal that Firebase is ready
+      window.firebaseReady = true;
+      
+      // Import and initialize the app script
+      import('./script.js').then(() => {
+        console.log('✅ Firebase and app initialized successfully!');
+      }).catch(err => {
+        console.error('❌ Error initializing app:', err);
+      });
     </script>
 </body>
 </html>
