@@ -1,7 +1,3 @@
-// Get Firestore reference from window
-let db = null;
-let firebaseReady = false;
-
 // Gift data structure
 let gifts = [];
 let currentFilter = 'all';
@@ -27,54 +23,31 @@ const giftsList = document.getElementById('giftsList');
 const emptyState = document.getElementById('emptyState');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
-// Check Firebase status
-function checkFirebase() {
-    if (window.firebaseReady && window.firebaseDB) {
-        db = window.firebaseDB;
-        firebaseReady = true;
-        console.log('✅ Firebase connection established');
-        return true;
+// Load gifts from localStorage
+function loadGifts() {
+    try {
+        const saved = localStorage.getItem('giftCheckerList');
+        if (saved) {
+            gifts = JSON.parse(saved);
+            console.log('✅ Loaded', gifts.length, 'gifts from storage');
+        }
+    } catch (error) {
+        console.error('Error loading gifts:', error);
     }
-    console.warn('⏳ Waiting for Firebase...');
-    return false;
 }
 
-// Set up real-time listener for Firestore
-function setupRealtimeListener() {
-    if (!db) {
-        console.error('❌ Database not available');
-        return;
+// Save gifts to localStorage
+function saveGifts() {
+    try {
+        localStorage.setItem('giftCheckerList', JSON.stringify(gifts));
+        console.log('💾 Saved', gifts.length, 'gifts');
+    } catch (error) {
+        console.error('Error saving gifts:', error);
     }
-
-    console.log('📡 Setting up real-time listener...');
-    db.collection('gifts')
-        .orderBy('createdAt', 'desc')
-        .onSnapshot((snapshot) => {
-            gifts = [];
-            snapshot.forEach((docSnapshot) => {
-                gifts.push({
-                    id: docSnapshot.id,
-                    ...docSnapshot.data()
-                });
-            });
-            console.log('📦 Gifts loaded:', gifts.length);
-            renderGifts();
-            updateStats();
-        }, (error) => {
-            console.error('❌ Error loading gifts:', error);
-        });
 }
 
 // Add new gift
-async function addGift() {
-    console.log('Adding gift...', { firebaseReady, db });
-    
-    if (!firebaseReady || !db) {
-        alert('🎅 Firebase is still loading, please try again!');
-        console.error('Firebase not ready:', { firebaseReady, db: !!db });
-        return;
-    }
-
+function addGift() {
     const name = giftNameInput.value.trim();
     const recipient = recipientInput.value.trim();
     const price = parseFloat(priceInput.value);
@@ -86,35 +59,35 @@ async function addGift() {
         return;
     }
 
-    try {
-        console.log('📝 Adding gift to Firestore...');
-        // Add to Firestore
-        await db.collection('gifts').add({
-            name,
-            recipient,
-            price,
-            link: link || null,
-            checked: false,
-            category,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
+    const gift = {
+        id: Date.now(),
+        name,
+        recipient,
+        price,
+        link: link || null,
+        checked: false,
+        category,
+        createdAt: new Date().toISOString()
+    };
 
-        console.log('✅ Gift added successfully!');
-        
-        // Show festive message
-        showFestiveMessage();
+    gifts.unshift(gift);
+    console.log('🎁 Added gift:', name);
+    
+    // Show festive message
+    showFestiveMessage();
 
-        // Clear inputs
-        giftNameInput.value = '';
-        recipientInput.value = '';
-        priceInput.value = '';
-        linkInput.value = '';
-        categorySelect.value = 'general';
-        giftNameInput.focus();
-    } catch (error) {
-        console.error('❌ Error adding gift:', error);
-        alert('❌ Error adding gift: ' + error.message);
-    }
+    // Save and render
+    saveGifts();
+    renderGifts();
+    updateStats();
+
+    // Clear inputs
+    giftNameInput.value = '';
+    recipientInput.value = '';
+    priceInput.value = '';
+    linkInput.value = '';
+    categorySelect.value = 'general';
+    giftNameInput.focus();
 }
 
 // Show festive message
@@ -212,30 +185,27 @@ function renderGifts() {
 }
 
 // Toggle gift checked status
-async function toggleGift(id) {
-    if (!firebaseReady) return;
-    
-    try {
-        const gift = gifts.find(g => g.id === id);
-        if (gift) {
-            await db.collection('gifts').doc(id).update({
-                checked: !gift.checked
-            });
-        }
-    } catch (error) {
-        console.error('Error toggling gift:', error);
+function toggleGift(id) {
+    const gift = gifts.find(g => g.id === id);
+    if (gift) {
+        gift.checked = !gift.checked;
+        console.log('✅ Toggled gift:', gift.name);
+        saveGifts();
+        renderGifts();
+        updateStats();
     }
 }
 
 // Delete gift
-async function deleteGift(id) {
-    if (!firebaseReady) return;
-    
-    try {
-        await db.collection('gifts').doc(id).delete();
-    } catch (error) {
-        console.error('Error deleting gift:', error);
-        alert('❌ Error deleting gift. Please try again!');
+function deleteGift(id) {
+    const giftIndex = gifts.findIndex(g => g.id === id);
+    if (giftIndex > -1) {
+        const giftName = gifts[giftIndex].name;
+        gifts.splice(giftIndex, 1);
+        console.log('🗑️ Deleted gift:', giftName);
+        saveGifts();
+        renderGifts();
+        updateStats();
     }
 }
 
@@ -269,19 +239,10 @@ function escapeHtml(text) {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM loaded');
+    console.log('✅ App initializing...');
     
-    // Check Firebase
-    if (!checkFirebase()) {
-        console.error('❌ Firebase not available');
-        alert('❌ Firebase not available. Please refresh the page.');
-        return;
-    }
-    
-    console.log('✅ Setting up listeners...');
-    
-    // Set up real-time listener
-    setupRealtimeListener();
+    // Load existing gifts
+    loadGifts();
     
     // Event listeners
     addBtn.addEventListener('click', addGift);
@@ -298,6 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    // Initial render
+    renderGifts();
+    updateStats();
     giftNameInput.focus();
-    console.log('✅ App fully initialized!');
+    
+    console.log('✅ App ready! You can add gifts now.');
 });
