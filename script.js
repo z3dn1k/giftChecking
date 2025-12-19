@@ -1,4 +1,4 @@
-// Gift data structure
+// Gift data structure (now managed by Firestore)
 let gifts = [];
 let currentFilter = 'all';
 
@@ -23,31 +23,36 @@ const giftsList = document.getElementById('giftsList');
 const emptyState = document.getElementById('emptyState');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
-// Load gifts from localStorage
-function loadGifts() {
-    try {
-        const saved = localStorage.getItem('giftCheckerList');
-        if (saved) {
-            gifts = JSON.parse(saved);
-            console.log('✅ Loaded', gifts.length, 'gifts from storage');
-        }
-    } catch (error) {
-        console.error('Error loading gifts:', error);
-    }
+// --- Firebase Integration ---
+
+// Initialize Firestore (db and giftsCollection are now available via window.db and window.giftsCollection
+// from the inline script in index.html)
+const db = window.db;
+const giftsCollection = window.giftsCollection;
+const fb = window.fb; // Access modular functions
+
+// Real-time listener for gifts collection
+function setupFirestoreListener() {
+    // Order gifts by creation date, newest first
+    const q = fb.query(giftsCollection, fb.orderBy("createdAt", "desc"));
+
+    fb.onSnapshot(q, (querySnapshot) => {
+        gifts = []; // Clear local gifts array
+        querySnapshot.forEach((doc) => {
+            // Firestore doc.id is the unique identifier
+            gifts.push({ id: doc.id, ...doc.data() });
+        });
+        console.log('✅ Fetched', gifts.length, 'gifts from Firestore');
+        renderGifts();
+        updateStats();
+    }, (error) => {
+        console.error("Error getting real-time updates: ", error);
+        alert("Failed to load gifts: " + error.message);
+    });
 }
 
-// Save gifts to localStorage
-function saveGifts() {
-    try {
-        localStorage.setItem('giftCheckerList', JSON.stringify(gifts));
-        console.log('💾 Saved', gifts.length, 'gifts');
-    } catch (error) {
-        console.error('Error saving gifts:', error);
-    }
-}
-
-// Add new gift
-function addGift() {
+// Add new gift to Firestore
+async function addGift() {
     const name = giftNameInput.value.trim();
     const recipient = recipientInput.value.trim();
     const price = parseFloat(priceInput.value);
@@ -59,36 +64,67 @@ function addGift() {
         return;
     }
 
-    const gift = {
-        id: Date.now(),
+    const newGift = {
         name,
         recipient,
         price,
         link: link || null,
         checked: false,
         category,
-        createdAt: new Date().toISOString()
+        createdAt: fb.firestore.FieldValue.serverTimestamp() // Firestore timestamp
     };
 
-    gifts.unshift(gift);
-    console.log('🎁 Added gift:', name);
-    
-    // Show festive message
-    showFestiveMessage();
-
-    // Save and render
-    saveGifts();
-    renderGifts();
-    updateStats();
-
-    // Clear inputs
-    giftNameInput.value = '';
-    recipientInput.value = '';
-    priceInput.value = '';
-    linkInput.value = '';
-    categorySelect.value = 'general';
-    giftNameInput.focus();
+    try {
+        await fb.addDoc(giftsCollection, newGift);
+        console.log('🎁 Added gift:', name);
+        showFestiveMessage();
+        // Clear inputs after successful add
+        giftNameInput.value = '';
+        recipientInput.value = '';
+        priceInput.value = '';
+        linkInput.value = '';
+        categorySelect.value = 'general';
+        giftNameInput.focus();
+    } catch (error) {
+        console.error('Error adding gift:', error);
+        alert('Failed to add gift: ' + error.message);
+    }
 }
+
+// Toggle gift checked status in Firestore
+async function toggleGift(id) {
+    const giftRef = fb.doc(db, "gifts", id);
+    const gift = gifts.find(g => g.id === id); // Get local state to toggle 'checked'
+    if (gift) {
+        try {
+            await fb.updateDoc(giftRef, { checked: !gift.checked });
+            console.log('✅ Toggled gift:', gift.name);
+            // UI will re-render automatically via onSnapshot
+        } catch (error) {
+            console.error('Error toggling gift status:', error);
+            alert('Failed to toggle gift status: ' + error.message);
+        }
+    }
+}
+
+// Delete gift from Firestore
+async function deleteGift(id) {
+    const giftRef = fb.doc(db, "gifts", id);
+    const giftToDelete = gifts.find(g => g.id === id);
+    if (giftToDelete && confirm(`Are you sure you want to delete "${giftToDelete.name}"?`)) {
+        try {
+            await fb.deleteDoc(giftRef);
+            console.log('🗑️ Deleted gift with ID:', id);
+            // UI will re-render automatically via onSnapshot
+        } catch (error) {
+            console.error('Error deleting gift:', error);
+            alert('Failed to delete gift: ' + error.message);
+        }
+    }
+}
+
+// --- End Firebase Integration ---
+
 
 // Show festive message
 function showFestiveMessage() {
@@ -110,39 +146,42 @@ function showFestiveMessage() {
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease-out';
         setTimeout(() => notification.remove(), 300);
     }, 2000);
 }
 
-// Add animation styles
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(400px);
-            opacity: 0;
+// Add animation styles (ensure this is only added once)
+if (!document.querySelector('style[data-animation-styles]')) {
+    const style = document.createElement('style');
+    style.setAttribute('data-animation-styles', '');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        to {
-            transform: translateX(0);
-            opacity: 1;
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
         }
-    }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(400px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
+}
 
 // Render all gifts
 function renderGifts() {
@@ -164,7 +203,7 @@ function renderGifts() {
                     <input
                         type="checkbox"
                         ${gift.checked ? 'checked' : ''}
-                        onchange="toggleGift(${gift.id})"
+                        onchange="toggleGift('${gift.id}')"
                     />
                 </div>
                 <div class="gift-info">
@@ -176,36 +215,11 @@ function renderGifts() {
                 </div>
                 <div class="gift-price">${gift.price.toFixed(2)} Kč</div>
                 ${gift.link ? `<a href="${escapeHtml(gift.link)}" target="_blank" rel="noopener noreferrer" class="link-btn" title="View product page">🔗</a>` : ''}
-                <button class="delete-btn" onclick="deleteGift(${gift.id})" title="Remove from list">
+                <button class="delete-btn" onclick="deleteGift('${gift.id}')" title="Remove from list">
                     ✕
                 </button>
             </li>
         `).join('');
-    }
-}
-
-// Toggle gift checked status
-function toggleGift(id) {
-    const gift = gifts.find(g => g.id === id);
-    if (gift) {
-        gift.checked = !gift.checked;
-        console.log('✅ Toggled gift:', gift.name);
-        saveGifts();
-        renderGifts();
-        updateStats();
-    }
-}
-
-// Delete gift
-function deleteGift(id) {
-    const giftIndex = gifts.findIndex(g => g.id === id);
-    if (giftIndex > -1) {
-        const giftName = gifts[giftIndex].name;
-        gifts.splice(giftIndex, 1);
-        console.log('🗑️ Deleted gift:', giftName);
-        saveGifts();
-        renderGifts();
-        updateStats();
     }
 }
 
@@ -225,7 +239,7 @@ function updateStats() {
 
     // Update filter counts
     document.querySelector('[data-filter="all"] .filter-count').textContent = totalGifts;
-    document.querySelector('[data-filter="unchecked"] .filter-count').textContent = 
+    document.querySelector('[data-filter="unchecked"] .filter-count').textContent =
         gifts.filter(g => !g.checked).length;
     document.querySelector('[data-filter="checked"] .filter-count').textContent = purchasedCount;
 }
@@ -240,10 +254,10 @@ function escapeHtml(text) {
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     console.log('✅ App initializing...');
-    
-    // Load existing gifts
-    loadGifts();
-    
+
+    // Setup Firestore real-time listener instead of loading from localStorage
+    setupFirestoreListener();
+
     // Event listeners
     addBtn.addEventListener('click', addGift);
     giftNameInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
@@ -255,14 +269,12 @@ document.addEventListener('DOMContentLoaded', () => {
             filterBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = btn.dataset.filter;
-            renderGifts();
+            renderGifts(); // Re-render local gifts based on filter
         });
     });
-    
-    // Initial render
-    renderGifts();
-    updateStats();
+
+    // Initial focus
     giftNameInput.focus();
-    
+
     console.log('✅ App ready! You can add gifts now.');
 });
