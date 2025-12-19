@@ -25,18 +25,19 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 
 // --- Firebase Integration ---
 
-// Initialize Firestore (db and giftsCollection are now available via window.db and window.giftsCollection
+// Initialize Firestore (db, giftsCollection, and the 'firestore' namespace are now available
 // from the inline script in index.html)
 const db = window.db;
 const giftsCollection = window.giftsCollection;
-const fb = window.fb; // Access modular functions
+const fs = window.firestore; // Access the full firestore namespace
 
 // Real-time listener for gifts collection
 function setupFirestoreListener() {
     // Order gifts by creation date, newest first
-    const q = fb.query(giftsCollection, fb.orderBy("createdAt", "desc"));
+    // Use fs.query and fs.orderBy from the firestore namespace
+    const q = fs.query(giftsCollection, fs.orderBy("createdAt", "desc"));
 
-    fb.onSnapshot(q, (querySnapshot) => {
+    fs.onSnapshot(q, (querySnapshot) => {
         gifts = []; // Clear local gifts array
         querySnapshot.forEach((doc) => {
             // Firestore doc.id is the unique identifier
@@ -71,11 +72,11 @@ async function addGift() {
         link: link || null,
         checked: false,
         category,
-        createdAt: fb.firestore.FieldValue.serverTimestamp() // Firestore timestamp
+        createdAt: fs.FieldValue.serverTimestamp() // Use fs.FieldValue
     };
 
     try {
-        await fb.addDoc(giftsCollection, newGift);
+        await fs.addDoc(giftsCollection, newGift); // Use fs.addDoc
         console.log('🎁 Added gift:', name);
         showFestiveMessage();
         // Clear inputs after successful add
@@ -93,11 +94,11 @@ async function addGift() {
 
 // Toggle gift checked status in Firestore
 async function toggleGift(id) {
-    const giftRef = fb.doc(db, "gifts", id);
+    const giftRef = fs.doc(db, "gifts", id); // Use fs.doc
     const gift = gifts.find(g => g.id === id); // Get local state to toggle 'checked'
     if (gift) {
         try {
-            await fb.updateDoc(giftRef, { checked: !gift.checked });
+            await fs.updateDoc(giftRef, { checked: !gift.checked }); // Use fs.updateDoc
             console.log('✅ Toggled gift:', gift.name);
             // UI will re-render automatically via onSnapshot
         } catch (error) {
@@ -109,11 +110,11 @@ async function toggleGift(id) {
 
 // Delete gift from Firestore
 async function deleteGift(id) {
-    const giftRef = fb.doc(db, "gifts", id);
+    const giftRef = fs.doc(db, "gifts", id); // Use fs.doc
     const giftToDelete = gifts.find(g => g.id === id);
     if (giftToDelete && confirm(`Are you sure you want to delete "${giftToDelete.name}"?`)) {
         try {
-            await fb.deleteDoc(giftRef);
+            await fs.deleteDoc(giftRef); // Use fs.deleteDoc
             console.log('🗑️ Deleted gift with ID:', id);
             // UI will re-render automatically via onSnapshot
         } catch (error) {

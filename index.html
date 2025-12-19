@@ -108,32 +108,29 @@
 
     <!-- Firebase SDK via CDN -->
     <!-- Modular Firebase SDK via CDN (replaces old CDN links) -->
+     <!-- Modular Firebase SDK via CDN -->
     <script type="module">
-        // Import the functions you need from the SDKs you want to use
+        // Import the core Firebase App initialization
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+        // Import all Firestore functions into a single 'firestore' namespace
+        import * as firestore from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
         // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
         const firebaseConfig = {
             projectId: "giftchecking-7a553", // Your Project ID
         };
 
-        // Initialize Firebase
+        // Initialize Firebase App
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Get the Firestore instance
+        const db = firestore.getFirestore(app);
 
-        // Make db and collection references available globally or pass them
-        // For simplicity in this example, we'll expose them on window
+        // Make core Firebase objects and the Firestore namespace available globally
         window.firebaseApp = app;
         window.db = db;
-        window.giftsCollection = collection(db, "gifts");
-
-        // Make modular functions available for direct use if needed in script.js
-        window.fb = {
-            initializeApp, getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy
-        };
-    </script>   
+        window.giftsCollection = firestore.collection(db, "gifts");
+        window.firestore = firestore; // Expose the entire firestore namespace
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
