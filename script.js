@@ -1,5 +1,5 @@
 // Import the functions you need from the Firebase SDKs
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js';
 import {
     getFirestore,
     collection,
@@ -10,9 +10,9 @@ import {
     doc,
     query,
     orderBy,
-    serverTimestamp, // Import serverTimestamp directly
-    FieldValue // Also import FieldValue if you need it for other operations
-} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+    serverTimestamp,
+    FieldValue
+} from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js';
 
 
 // Your web app's Firebase configuration
@@ -299,3 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('✅ App ready! You can add gifts now.');
 });
+
+// EXPOSE FUNCTIONS TO GLOBAL WINDOW OBJECT FOR INLINE HTML EVENT HANDLERS
+window.toggleGift = toggleGift;
+window.deleteGift = deleteGift;
