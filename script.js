@@ -1,30 +1,10 @@
-// Wait for Firebase to be initialized
-function waitForFirebase() {
-    return new Promise(resolve => {
-        if (window.firebaseReady && window.firebaseDB) {
-            resolve();
-        } else {
-            const checkInterval = setInterval(() => {
-                if (window.firebaseReady && window.firebaseDB) {
-                    clearInterval(checkInterval);
-                    resolve();
-                }
-            }, 50);
-            
-            // Timeout after 5 seconds
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                console.error('Firebase initialization timeout');
-            }, 5000);
-        }
-    });
-}
+// Get Firestore reference
+const db = window.firebaseApp?.db;
 
 // Gift data structure
 let gifts = [];
 let currentFilter = 'all';
-let firebaseReady = false;
-let db, collection, addDoc, query, onSnapshot, deleteDoc, doc, updateDoc;
+let firebaseReady = !!db;
 
 // Festive messages
 const christmasMessages = [
@@ -47,69 +27,42 @@ const giftsList = document.getElementById('giftsList');
 const emptyState = document.getElementById('emptyState');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
-// Initialize Firebase connection
-async function initializeFirebase() {
-    try {
-        await waitForFirebase();
-        
-        const firebaseAPI = window.firebaseDB;
-        db = firebaseAPI.db;
-        collection = firebaseAPI.collection;
-        addDoc = firebaseAPI.addDoc;
-        query = firebaseAPI.query;
-        onSnapshot = firebaseAPI.onSnapshot;
-        deleteDoc = firebaseAPI.deleteDoc;
-        doc = firebaseAPI.doc;
-        updateDoc = firebaseAPI.updateDoc;
-        
-        firebaseReady = true;
-        console.log('✅ Firebase initialized successfully');
-        
-        // Set up real-time listener
-        setupRealtimeListener();
-        
-        // Event listeners
-        addBtn.addEventListener('click', addGift);
-        giftNameInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
-        recipientInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
-        priceInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.filter;
-                renderGifts();
-            });
-        });
-    } catch (error) {
-        console.error('❌ Failed to initialize Firebase:', error);
-        alert('❌ Failed to connect to Firebase. Please refresh the page.');
-    }
+// Check if Firebase is ready
+if (!firebaseReady) {
+    console.error('❌ Firebase is not initialized!');
+} else {
+    console.log('✅ Firebase is ready!');
 }
 
 // Set up real-time listener for Firestore
 function setupRealtimeListener() {
-    const giftsCollection = collection(db, 'gifts');
-    const q = query(giftsCollection);
-    
-    onSnapshot(q, (snapshot) => {
-        gifts = [];
-        snapshot.forEach((doc) => {
-            gifts.push({
-                id: doc.id,
-                ...doc.data()
+    if (!db) {
+        console.error('❌ Database not available');
+        return;
+    }
+
+    db.collection('gifts')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot((snapshot) => {
+            gifts = [];
+            snapshot.forEach((docSnapshot) => {
+                gifts.push({
+                    id: docSnapshot.id,
+                    ...docSnapshot.data()
+                });
             });
+            console.log('📦 Gifts loaded:', gifts.length);
+            renderGifts();
+            updateStats();
+        }, (error) => {
+            console.error('❌ Error loading gifts:', error);
         });
-        renderGifts();
-        updateStats();
-    });
 }
 
 // Add new gift
 async function addGift() {
     if (!firebaseReady) {
-        alert('🎅 Firebase is still loading, please try again!');
+        alert('🎅 Firebase is still loading, please refresh and try again!');
         return;
     }
 
@@ -125,18 +78,20 @@ async function addGift() {
     }
 
     try {
+        console.log('📝 Adding gift to Firestore...');
         // Add to Firestore
-        const giftsCollection = collection(db, 'gifts');
-        await addDoc(giftsCollection, {
+        await db.collection('gifts').add({
             name,
             recipient,
             price,
-            link,
+            link: link || null,
             checked: false,
             category,
-            createdAt: new Date()
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        console.log('✅ Gift added successfully!');
+        
         // Show festive message
         showFestiveMessage();
 
@@ -148,8 +103,8 @@ async function addGift() {
         categorySelect.value = 'general';
         giftNameInput.focus();
     } catch (error) {
-        console.error('Error adding gift:', error);
-        alert('❌ Error adding gift. Please try again!');
+        console.error('❌ Error adding gift:', error);
+        alert('❌ Error adding gift: ' + error.message);
     }
 }
 
@@ -254,8 +209,7 @@ async function toggleGift(id) {
     try {
         const gift = gifts.find(g => g.id === id);
         if (gift) {
-            const giftDoc = doc(db, 'gifts', id);
-            await updateDoc(giftDoc, {
+            await db.collection('gifts').doc(id).update({
                 checked: !gift.checked
             });
         }
@@ -269,8 +223,7 @@ async function deleteGift(id) {
     if (!firebaseReady) return;
     
     try {
-        const giftDoc = doc(db, 'gifts', id);
-        await deleteDoc(giftDoc);
+        await db.collection('gifts').doc(id).delete();
     } catch (error) {
         console.error('Error deleting gift:', error);
         alert('❌ Error deleting gift. Please try again!');
@@ -306,8 +259,33 @@ function escapeHtml(text) {
 }
 
 // Initialize app
-initializeFirebase().then(() => {
-    console.log('✅ App ready!');
-}).catch(error => {
-    console.error('❌ Initialization error:', error);
+document.addEventListener('DOMContentLoaded', () => {
+    if (!firebaseReady) {
+        console.error('❌ Firebase not ready on DOMContentLoaded');
+        alert('❌ Failed to initialize Firebase. Please refresh the page.');
+        return;
+    }
+    
+    console.log('✅ DOM loaded, setting up listeners...');
+    
+    // Set up real-time listener
+    setupRealtimeListener();
+    
+    // Event listeners
+    addBtn.addEventListener('click', addGift);
+    giftNameInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+    recipientInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+    priceInput.addEventListener('keypress', (e) => e.key === 'Enter' && addGift());
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderGifts();
+        });
+    });
+    
+    giftNameInput.focus();
+    console.log('✅ App fully initialized!');
 });

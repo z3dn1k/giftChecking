@@ -106,12 +106,11 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-      import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+    <!-- Firebase SDK (Compat version - simpler) -->
+    <script src="https://www.gstatic.com/firebaseapp/12.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebaseapp/12.7.0/firebase-firestore-compat.js"></script>
 
+    <script>
       // Your web app's Firebase configuration
       const firebaseConfig = {
         apiKey: "AIzaSyB0WayJ_h8e7k2mSkW3ABt99E9PV6BtRrA",
@@ -124,30 +123,13 @@
       };
 
       // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-
-      // Make Firebase functions globally available
-      window.firebaseDB = {
-        db,
-        collection,
-        addDoc,
-        query,
-        onSnapshot,
-        deleteDoc,
-        doc,
-        updateDoc
-      };
-
-      // Signal that Firebase is ready
-      window.firebaseReady = true;
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
       
-      // Import and initialize the app script
-      import('./script.js').then(() => {
-        console.log('✅ Firebase and app initialized successfully!');
-      }).catch(err => {
-        console.error('❌ Error initializing app:', err);
-      });
+      // Make it globally available
+      window.firebaseApp = { db };
     </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>
