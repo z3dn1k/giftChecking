@@ -15,7 +15,7 @@
             <div class="snowflake">❄️</div>
             <div class="snowflake">❄️</div>
         </div>
-        
+
         <header class="header">
             <h1>🎄 SEZNAM VÁNOČNÍCH DÁRKŮ 🎄</h1>
             <p class="subtitle">✨ Šťastné a veselé Vánoce ✨</p>
@@ -75,9 +75,9 @@
                 />
                 <select id="category" class="input-field">
                     <option value="general">🎁 Obecné</option>
-                    <option value="clothing">👕 Oblečení</option>
                     <option value="electronics">📱 Elektronika</option>
                     <option value="books">📚 Knihy</option>
+                    <option value="clothing">👕 Oblečení</option>
                     <option value="toys">🧸 Hračky</option>
                     <option value="home">🏠 Dům</option>
                     <option value="sports">⚽ Sport</option>
@@ -106,31 +106,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK via CDN -->
-    <!-- Modular Firebase SDK via CDN (replaces old CDN links) -->
-     <!-- Modular Firebase SDK via CDN -->
-    <script type="module">
-        // Import the core Firebase App initialization
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-        // Import all Firestore functions into a single 'firestore' namespace
-        import * as firestore from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            projectId: "giftchecking-7a553", // Your Project ID
-        };
-
-        // Initialize Firebase App
-        const app = initializeApp(firebaseConfig);
-        // Get the Firestore instance
-        const db = firestore.getFirestore(app);
-
-        // Make core Firebase objects and the Firestore namespace available globally
-        window.firebaseApp = app;
-        window.db = db;
-        window.giftsCollection = firestore.collection(db, "gifts");
-        window.firestore = firestore; // Expose the entire firestore namespace
-    </script>
-    <script src="script.js"></script>
+    <!-- Mark script.js as a module -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>

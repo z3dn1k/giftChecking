@@ -1,3 +1,30 @@
+// Import the functions you need from the Firebase SDKs
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+import {
+    getFirestore,
+    collection,
+    onSnapshot,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    orderBy,
+    serverTimestamp, // Import serverTimestamp directly
+    FieldValue // Also import FieldValue if you need it for other operations
+} from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    projectId: "giftchecking-7a553", // Your Project ID
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const giftsCollection = collection(db, "gifts"); // Define giftsCollection here
+
 // Gift data structure (now managed by Firestore)
 let gifts = [];
 let currentFilter = 'all';
@@ -25,19 +52,12 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 
 // --- Firebase Integration ---
 
-// Initialize Firestore (db, giftsCollection, and the 'firestore' namespace are now available
-// from the inline script in index.html)
-const db = window.db;
-const giftsCollection = window.giftsCollection;
-const fs = window.firestore; // Access the full firestore namespace
-
 // Real-time listener for gifts collection
 function setupFirestoreListener() {
     // Order gifts by creation date, newest first
-    // Use fs.query and fs.orderBy from the firestore namespace
-    const q = fs.query(giftsCollection, fs.orderBy("createdAt", "desc"));
+    const q = query(giftsCollection, orderBy("createdAt", "desc")); // Use imported query and orderBy
 
-    fs.onSnapshot(q, (querySnapshot) => {
+    onSnapshot(q, (querySnapshot) => { // Use imported onSnapshot
         gifts = []; // Clear local gifts array
         querySnapshot.forEach((doc) => {
             // Firestore doc.id is the unique identifier
@@ -72,11 +92,11 @@ async function addGift() {
         link: link || null,
         checked: false,
         category,
-        createdAt: fs.FieldValue.serverTimestamp() // Use fs.FieldValue
+        createdAt: serverTimestamp() // Use imported serverTimestamp
     };
 
     try {
-        await fs.addDoc(giftsCollection, newGift); // Use fs.addDoc
+        await addDoc(giftsCollection, newGift); // Use imported addDoc
         console.log('🎁 Added gift:', name);
         showFestiveMessage();
         // Clear inputs after successful add
@@ -94,11 +114,11 @@ async function addGift() {
 
 // Toggle gift checked status in Firestore
 async function toggleGift(id) {
-    const giftRef = fs.doc(db, "gifts", id); // Use fs.doc
+    const giftRef = doc(db, "gifts", id); // Use imported doc
     const gift = gifts.find(g => g.id === id); // Get local state to toggle 'checked'
     if (gift) {
         try {
-            await fs.updateDoc(giftRef, { checked: !gift.checked }); // Use fs.updateDoc
+            await updateDoc(giftRef, { checked: !gift.checked }); // Use imported updateDoc
             console.log('✅ Toggled gift:', gift.name);
             // UI will re-render automatically via onSnapshot
         } catch (error) {
@@ -110,11 +130,11 @@ async function toggleGift(id) {
 
 // Delete gift from Firestore
 async function deleteGift(id) {
-    const giftRef = fs.doc(db, "gifts", id); // Use fs.doc
+    const giftRef = doc(db, "gifts", id); // Use imported doc
     const giftToDelete = gifts.find(g => g.id === id);
     if (giftToDelete && confirm(`Are you sure you want to delete "${giftToDelete.name}"?`)) {
         try {
-            await fs.deleteDoc(giftRef); // Use fs.deleteDoc
+            await deleteDoc(giftRef); // Use imported deleteDoc
             console.log('🗑️ Deleted gift with ID:', id);
             // UI will re-render automatically via onSnapshot
         } catch (error) {
@@ -214,7 +234,7 @@ function renderGifts() {
                         <span class="category-badge">${escapeHtml(gift.category)}</span>
                     </div>
                 </div>
-                <div class="gift-price">${gift.price.toFixed(2)} Kč</div>
+                <div class="gift-price">${gift.price ? gift.price.toFixed(2) : '0.00'} Kč</div>
                 ${gift.link ? `<a href="${escapeHtml(gift.link)}" target="_blank" rel="noopener noreferrer" class="link-btn" title="View product page">🔗</a>` : ''}
                 <button class="delete-btn" onclick="deleteGift('${gift.id}')" title="Remove from list">
                     ✕
@@ -228,7 +248,7 @@ function renderGifts() {
 function updateStats() {
     const totalGifts = gifts.length;
     const purchasedCount = gifts.filter(g => g.checked).length;
-    const totalCost = gifts.reduce((sum, gift) => sum + gift.price, 0);
+    const totalCost = gifts.reduce((sum, gift) => sum + (gift.price || 0), 0); // Handle potential undefined price
     const progressPercentage = totalGifts > 0 ? (purchasedCount / totalGifts) * 100 : 0;
 
     // Update DOM
