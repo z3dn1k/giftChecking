@@ -106,28 +106,43 @@
         </div>
     </div>
 
-    <!-- Firebase SDK (Compat version - simpler) -->
-    <script src="https://www.gstatic.com/firebaseapp/12.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebaseapp/12.7.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDK (Compat version) -->
+    <script src="https://www.gstatic.com/firebaseapp/compat/v9/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebaseapp/compat/v9/firebase-firestore-compat.js"></script>
 
     <script>
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyB0WayJ_h8e7k2mSkW3ABt99E9PV6BtRrA",
-        authDomain: "giftchecking-7a553.firebaseapp.com",
-        projectId: "giftchecking-7a553",
-        storageBucket: "giftchecking-7a553.firebasestorage.app",
-        messagingSenderId: "76228984222",
-        appId: "1:76228984222:web:b8f564a23b9cb5179b2a8f",
-        measurementId: "G-GL2171J2YS"
-      };
+      // Check if Firebase loaded
+      if (typeof firebase === 'undefined') {
+        console.error('❌ Firebase SDK failed to load');
+        alert('❌ Firebase failed to load. Please check your internet connection and refresh.');
+      } else {
+        console.log('✅ Firebase SDK loaded');
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyB0WayJ_h8e7k2mSkW3ABt99E9PV6BtRrA",
+          authDomain: "giftchecking-7a553.firebaseapp.com",
+          projectId: "giftchecking-7a553",
+          storageBucket: "giftchecking-7a553.firebasestorage.app",
+          messagingSenderId: "76228984222",
+          appId: "1:76228984222:web:b8f564a23b9cb5179b2a8f",
+          measurementId: "G-GL2171J2YS"
+        };
 
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      
-      // Make it globally available
-      window.firebaseApp = { db };
+        try {
+          // Initialize Firebase
+          firebase.initializeApp(firebaseConfig);
+          const db = firebase.firestore();
+          
+          // Make it globally available
+          window.firebaseDB = db;
+          window.firebaseReady = true;
+          console.log('✅ Firebase initialized successfully');
+        } catch (error) {
+          console.error('❌ Firebase initialization error:', error);
+          alert('❌ Firebase init failed: ' + error.message);
+        }
+      }
     </script>
     
     <script src="script.js"></script>

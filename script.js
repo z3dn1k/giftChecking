@@ -1,10 +1,10 @@
-// Get Firestore reference
-const db = window.firebaseApp?.db;
+// Get Firestore reference from window
+let db = null;
+let firebaseReady = false;
 
 // Gift data structure
 let gifts = [];
 let currentFilter = 'all';
-let firebaseReady = !!db;
 
 // Festive messages
 const christmasMessages = [
@@ -27,11 +27,16 @@ const giftsList = document.getElementById('giftsList');
 const emptyState = document.getElementById('emptyState');
 const filterBtns = document.querySelectorAll('.filter-btn');
 
-// Check if Firebase is ready
-if (!firebaseReady) {
-    console.error('❌ Firebase is not initialized!');
-} else {
-    console.log('✅ Firebase is ready!');
+// Check Firebase status
+function checkFirebase() {
+    if (window.firebaseReady && window.firebaseDB) {
+        db = window.firebaseDB;
+        firebaseReady = true;
+        console.log('✅ Firebase connection established');
+        return true;
+    }
+    console.warn('⏳ Waiting for Firebase...');
+    return false;
 }
 
 // Set up real-time listener for Firestore
@@ -41,6 +46,7 @@ function setupRealtimeListener() {
         return;
     }
 
+    console.log('📡 Setting up real-time listener...');
     db.collection('gifts')
         .orderBy('createdAt', 'desc')
         .onSnapshot((snapshot) => {
@@ -61,8 +67,11 @@ function setupRealtimeListener() {
 
 // Add new gift
 async function addGift() {
-    if (!firebaseReady) {
-        alert('🎅 Firebase is still loading, please refresh and try again!');
+    console.log('Adding gift...', { firebaseReady, db });
+    
+    if (!firebaseReady || !db) {
+        alert('🎅 Firebase is still loading, please try again!');
+        console.error('Firebase not ready:', { firebaseReady, db: !!db });
         return;
     }
 
@@ -260,13 +269,16 @@ function escapeHtml(text) {
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    if (!firebaseReady) {
-        console.error('❌ Firebase not ready on DOMContentLoaded');
-        alert('❌ Failed to initialize Firebase. Please refresh the page.');
+    console.log('📄 DOM loaded');
+    
+    // Check Firebase
+    if (!checkFirebase()) {
+        console.error('❌ Firebase not available');
+        alert('❌ Firebase not available. Please refresh the page.');
         return;
     }
     
-    console.log('✅ DOM loaded, setting up listeners...');
+    console.log('✅ Setting up listeners...');
     
     // Set up real-time listener
     setupRealtimeListener();
