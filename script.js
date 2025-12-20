@@ -164,11 +164,15 @@ async function loadFamilyMembers() {
     
     querySnapshot.forEach((doc) => {
         const data = doc.data();
+        
+        // CHECK: If the data is broken or missing a UID, skip it!
+        if (!data || !data.uid) return;
+
         const option = document.createElement('option');
         option.value = data.uid;
         
-        // Use Username if available, otherwise Email
-        const displayName = data.username || data.email;
+        // Use Username if available, otherwise Email, otherwise "Unknown"
+        const displayName = data.username || data.email || "Neznámý";
         
         option.textContent = (data.uid === currentUser.uid) ? `${displayName} (Já - Moje Přání)` : `🎄 ${displayName}`;
         userSelector.appendChild(option);
@@ -178,6 +182,10 @@ async function loadFamilyMembers() {
         switchList(e.target.value);
     };
 }
+
+    userSelector.onchange = (e) => {
+        switchList(e.target.value);
+    };
 
 // Switch between viewing different users
 function switchList(targetUid) {
