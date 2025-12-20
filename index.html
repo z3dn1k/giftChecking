@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gift Checker</title>
+    <title>Christmas Wishlist</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-logo">🎁 GiftChekr</div>
+        <div class="nav-logo">🎁 SecretWishlist</div>
         <div class="nav-links">
             <div id="loggedOutLinks">
                 <button class="nav-btn" id="openLoginBtn">Login</button>
@@ -23,70 +23,73 @@
 
     <div class="app-container">
         <div class="snowflakes">
-             <div class="snowflake">18</div>
-            <div class="snowflake">18</div>
-            <div class="snowflake">18</div>
-            <div class="snowflake">18</div>
-            <div class="snowflake">18</div>
+            <div class="snowflake">❄️</div><div class="snowflake">✨</div>
+            <div class="snowflake">🎁</div><div class="snowflake">✨</div>
+            <div class="snowflake">❄️</div>
         </div>
 
         <header class="header">
-            <h1>😁 seznam dárků na 18 narozeniny honzy 😁</h1>
-            <p class="subtitle">✨ ||| ✨</p>
+            <h1>🎄 Vánoční Přání 🎄</h1>
+            
+            <div id="userSelectorContainer" style="display: none; margin-top: 1rem;">
+                <p class="subtitle" style="margin-bottom: 0.5rem; font-size: 0.9em;">Čí seznam si prohlížíš?</p>
+                <select id="userSelector" class="input-field" style="width: 100%; max-width: 300px; text-align: center; cursor: pointer;">
+                    <option value="" disabled selected>Načítání rodiny...</option>
+                </select>
+            </div>
+            
+            <p id="listStatusMessage" class="subtitle" style="margin-top: 15px; font-weight: bold; min-height: 1.5em;"></p>
         </header>
 
         <div id="appContent" style="display: none;">
-            <div class="stats-container">
+            
+            <div class="stats-container" id="statsSection" style="display: none;">
                 <div class="stat-card stat-card-1">
-                    <div class="stat-label">🎁 Počet dárků</div>
+                    <div class="stat-label">📝 Dárků</div>
                     <div class="stat-value" id="totalGifts">0</div>
                 </div>
                 <div class="stat-card stat-card-2">
-                    <div class="stat-label">✅ Koupeno dárků</div>
+                    <div class="stat-label">✅ Koupeno</div>
                     <div class="stat-value" id="purchasedCount">0</div>
                 </div>
                 <div class="stat-card stat-card-3">
-                    <div class="stat-label">💰 Celková cena dárků</div>
+                    <div class="stat-label">💸 Cena (cca)</div>
                     <div class="stat-value" id="totalCost">0.00 Kč</div>
                 </div>
             </div>
 
-            <div class="input-section">
-                <h2>🎀 Přidejte vaše vysněné dárky 🎀</h2>
+            <div class="input-section" id="addGiftSection" style="display: none;">
+                <h2>🎁 Co si přeješ pod stromeček?</h2>
                 <div class="input-group">
-                    <input type="text" id="giftName" placeholder="Jméno dárku" class="input-field" />
-                    <input type="text" id="recipient" placeholder="Pro koho to je?" class="input-field" />
-                    <input type="number" id="price" placeholder="Cena (Kč)" class="input-field" step="0.01" min="0" />
-                    <input type="url" id="link" placeholder="Odkaz na dárek" class="input-field" />
+                    <input type="text" id="giftName" placeholder="Název dárku" class="input-field" />
+                    <input type="text" id="recipient" placeholder="Poznámka (velikost, barva...)" class="input-field" />
+                    <input type="number" id="price" placeholder="Cena (Kč)" class="input-field" step="1" min="0" />
+                    <input type="url" id="link" placeholder="Odkaz na eshop" class="input-field" />
                     <select id="category" class="input-field">
                         <option value="general">🎁 Obecné</option>
-                        <option value="electronics">📱 Elektronika</option>
+                        <option value="clothes">👕 Oblečení</option>
+                        <option value="tech">📱 Elektronika</option>
                         <option value="books">📚 Knihy</option>
-                        <option value="clothing">👕 Oblečení</option>
-                        <option value="toys">🧸 Hračky</option>
-                        <option value="home">🏠 Dům</option>
-                        <option value="sports">⚽ Sport</option>
+                        <option value="home">🏠 Domov</option>
                     </select>
-                    <button id="addBtn" class="add-btn">🎉 Přidat dárek</button>
+                    <button id="addBtn" class="add-btn">Přidat přání</button>
                 </div>
             </div>
 
-            <div class="filter-section">
-                <button class="filter-btn active" data-filter="all">✌️ Všechny dárky (<span class="filter-count" data-filter="all">0</span>)</button>
-                <button class="filter-btn" data-filter="unchecked">🛍️ Stále nakupuji (<span class="filter-count" data-filter="unchecked">0</span>)</button>
-                <button class="filter-btn" data-filter="checked">✨ Koupeno! (<span class="filter-count" data-filter="checked">0</span>)</button>
+            <div class="filter-section" id="filterSection" style="display: none;">
+                <button class="filter-btn active" data-filter="all">Vše</button>
+                <button class="filter-btn" data-filter="unchecked">Volné</button>
+                <button class="filter-btn" data-filter="checked">Už koupeno</button>
             </div>
 
             <div class="gifts-section">
-                <div class="empty-state" id="emptyState">
-                    <p> Začněte přidávat dárky <3 </p>
-                </div>
+                <div class="empty-state" id="emptyState">Seznam je prázdný...</div>
                 <ul class="gifts-list" id="giftsList"></ul>
             </div>
         </div>
 
         <div id="loginMessage" style="text-align: center; padding: 2rem;">
-            <h2>🔐 Please Login to view and manage your list</h2>
+            <h2>🔐 Přihlašte se pro zobrazení přání</h2>
         </div>
     </div>
 
@@ -97,7 +100,7 @@
             <form id="authForm">
                 <input type="email" id="authEmail" class="input-field" placeholder="Email" required style="width: 100%; margin-bottom: 1rem;">
                 <input type="password" id="authPassword" class="input-field" placeholder="Password" required style="width: 100%; margin-bottom: 1rem;">
-                <button type="submit" class="add-btn" style="width: 100%;">Submit</button>
+                <button type="submit" class="add-btn" style="width: 100%;">Vstoupit</button>
             </form>
             <p id="authError" style="color: var(--neon-pink); margin-top: 1rem;"></p>
         </div>
