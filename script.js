@@ -25,7 +25,7 @@ import {
 // --- CONFIGURATION ---
 const firebaseConfig = {
     projectId: "giftchecking-7a553",
-    apiKey: "AIzaSy...", // ⚠️ PASTE YOUR REAL API KEY HERE ⚠️
+    apiKey: "AIzaSyB0WayJ_h8e7k2mSkW3ABt99E9PV6BtRrA", // ⚠️ PASTE YOUR REAL API KEY HERE ⚠️
     authDomain: "giftchecking-7a553.firebaseapp.com"
 };
 
