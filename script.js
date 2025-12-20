@@ -65,19 +65,29 @@ document.getElementById('logoutBtn').addEventListener('click', () => signOut(aut
 document.querySelector('.close-modal').addEventListener('click', () => modal.style.display = 'none');
 
 function openModal(type) {
+    console.log("Opening modal for:", type); // Debug check
+
     modal.style.display = 'block';
-    document.getElementById('modalTitle').textContent = (type === 'Register') ? 'Registrace' : 'Přihlášení';
+    
+    // Set title
+    const titleElement = document.getElementById('modalTitle');
+    if (titleElement) titleElement.textContent = (type === 'Register') ? 'Registrace' : 'Přihlášení';
+    
     isRegistering = (type === 'Register');
     authError.textContent = '';
     authForm.reset();
 
-    // Show/Hide Username Input
+    // Force the element retrieval right here to be safe
+    const usernameInput = document.getElementById('authUsername');
+
     if (isRegistering) {
-        authUsername.style.display = 'block';
-        authUsername.required = true;
+        console.log("Showing username input");
+        usernameInput.style.display = 'block';
+        usernameInput.required = true;
     } else {
-        authUsername.style.display = 'none';
-        authUsername.required = false;
+        console.log("Hiding username input");
+        usernameInput.style.display = 'none';
+        usernameInput.required = false;
     }
 }
 
