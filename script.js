@@ -11,7 +11,8 @@ import {
     query,
     orderBy,
     serverTimestamp,
-    getDocs
+    getDocs,
+    getDoc
 } from 'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js';
 import { 
     getAuth, 
@@ -24,7 +25,7 @@ import {
 // --- CONFIGURATION ---
 const firebaseConfig = {
     projectId: "giftchecking-7a553",
-    apiKey: "AIzaSyB0WayJ_h8e7k2mSkW3ABt99E9PV6BtRrA", // ⚠️ PASTE YOUR REAL API KEY HERE ⚠️
+    apiKey: "AIzaSy...", // ⚠️ PASTE YOUR REAL API KEY HERE ⚠️
     authDomain: "giftchecking-7a553.firebaseapp.com"
 };
 
@@ -35,7 +36,7 @@ const auth = getAuth(app);
 // --- STATE ---
 let gifts = [];
 let currentUser = null;
-let currentViewingUid = null; // The User ID of the list we are currently looking at
+let currentViewingUid = null; 
 let unsubscribeFromFirestore = null;
 let currentFilter = 'all';
 
@@ -54,6 +55,7 @@ const modal = document.getElementById('authModal');
 const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
+const authUsername = document.getElementById('authUsername'); // New Input
 const authError = document.getElementById('authError');
 let isRegistering = false;
 
@@ -64,26 +66,41 @@ document.querySelector('.close-modal').addEventListener('click', () => modal.sty
 
 function openModal(type) {
     modal.style.display = 'block';
-    document.getElementById('modalTitle').textContent = type;
+    document.getElementById('modalTitle').textContent = (type === 'Register') ? 'Registrace' : 'Přihlášení';
     isRegistering = (type === 'Register');
     authError.textContent = '';
     authForm.reset();
+
+    // Show/Hide Username Input
+    if (isRegistering) {
+        authUsername.style.display = 'block';
+        authUsername.required = true;
+    } else {
+        authUsername.style.display = 'none';
+        authUsername.required = false;
+    }
 }
 
 authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = authEmail.value;
     const password = authPassword.value;
+    const username = authUsername.value; // Get username
+
     try {
         let userCred;
         if (isRegistering) {
+            // 1. Create Auth User
             userCred = await createUserWithEmailAndPassword(auth, email, password);
-            // 🚨 SAVE USER TO PUBLIC LIST SO OTHERS CAN FIND THEM
+            
+            // 2. Save Username to Public Profile
             await setDoc(doc(db, "public_profiles", userCred.user.uid), {
                 email: email,
+                username: username, // Save the name!
                 uid: userCred.user.uid
             });
         } else {
+            // Login
             userCred = await signInWithEmailAndPassword(auth, email, password);
         }
         modal.style.display = 'none';
@@ -100,7 +117,15 @@ onAuthStateChanged(auth, async (user) => {
         // Logged In UI
         document.getElementById('loggedOutLinks').style.display = 'none';
         document.getElementById('loggedInLinks').style.display = 'flex';
-        document.getElementById('userEmailDisplay').textContent = user.email;
+        
+        // Try to fetch my own username for display in navbar
+        const myProfileSnap = await getDoc(doc(db, "public_profiles", user.uid));
+        if (myProfileSnap.exists()) {
+            document.getElementById('userEmailDisplay').textContent = myProfileSnap.data().username;
+        } else {
+            document.getElementById('userEmailDisplay').textContent = user.email;
+        }
+
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('loginMessage').style.display = 'none';
         userSelectorContainer.style.display = 'block';
@@ -127,13 +152,15 @@ async function loadFamilyMembers() {
     const querySnapshot = await getDocs(collection(db, "public_profiles"));
     userSelector.innerHTML = '';
     
-    // Add "Me" option first
-    // Note: In a real app, you might want to sort these
     querySnapshot.forEach((doc) => {
         const data = doc.data();
         const option = document.createElement('option');
         option.value = data.uid;
-        option.textContent = (data.uid === currentUser.uid) ? `${data.email} (Já - Moje Přání)` : `🎄 ${data.email}`;
+        
+        // Use Username if available, otherwise Email
+        const displayName = data.username || data.email;
+        
+        option.textContent = (data.uid === currentUser.uid) ? `${displayName} (Já - Moje Přání)` : `🎄 ${displayName}`;
         userSelector.appendChild(option);
     });
 
@@ -152,16 +179,20 @@ function switchList(targetUid) {
         // I am looking at MY OWN list
         listStatusMessage.textContent = "🤫 Toto je tvoje přání. Nevidíš, co je koupeno (překvapení)!";
         listStatusMessage.style.color = "var(--text-muted)";
-        addGiftSection.style.display = 'block';  // Can add items
-        statsSection.style.display = 'none';     // Hide money/count stats
-        filterSection.style.display = 'none';    // Hide filters
+        addGiftSection.style.display = 'block';  
+        statsSection.style.display = 'none';     
+        filterSection.style.display = 'none';    
     } else {
-        // I am looking at SOMEONE ELSE'S list (Santa Mode)
-        listStatusMessage.textContent = "🎅 Jsi Ježíšek! Vidíš, co už je koupeno. Můžeš dárky odškrtávat.";
+        // I am looking at SOMEONE ELSE'S list
+        // Get name of the person we are viewing
+        const selectedOption = userSelector.options[userSelector.selectedIndex];
+        const name = selectedOption ? selectedOption.text.replace('🎄 ', '') : 'nich';
+
+        listStatusMessage.textContent = `🎅 Jsi Ježíšek pro: ${name}! Vidíš, co už je koupeno.`;
         listStatusMessage.style.color = "var(--neon-pink)";
-        addGiftSection.style.display = 'none';   // Can't add items to their list
-        statsSection.style.display = 'grid';     // Show stats
-        filterSection.style.display = 'flex';    // Show filters
+        addGiftSection.style.display = 'none';   
+        statsSection.style.display = 'grid';     
+        filterSection.style.display = 'flex';    
     }
 
     // Load Data
@@ -172,12 +203,11 @@ function switchList(targetUid) {
         gifts = [];
         snapshot.forEach(doc => gifts.push({ id: doc.id, ...doc.data() }));
         renderGifts(isMyList);
-        if (!isMyList) updateStats(); // Only update stats if we can see them
+        if (!isMyList) updateStats(); 
     });
 }
 
 function renderGifts(isOwner) {
-    // Filter logic: Only apply filters if NOT owner (Owner sees all, just unchecked)
     const filtered = gifts.filter(gift => {
         if (isOwner) return true; 
         if (currentFilter === 'checked') return gift.checked;
@@ -193,15 +223,9 @@ function renderGifts(isOwner) {
     emptyState.style.display = 'none';
 
     giftsList.innerHTML = filtered.map(gift => {
-        // SURPRISE LOGIC:
-        // If Owner: Visually Unchecked (always), Disabled cursor.
-        // If Guest: Real status, Pointer cursor.
         const isChecked = isOwner ? false : gift.checked; 
         const cursorStyle = isOwner ? 'cursor: not-allowed;' : 'cursor: pointer;';
         const checkboxDisabled = isOwner ? 'disabled' : '';
-        
-        // CSS Classes
-        // 'owner-view' makes the checkbox semi-transparent and grey
         const itemClass = `gift-item ${isOwner ? 'owner-view' : (isChecked ? 'checked' : '')}`;
 
         return `
@@ -230,7 +254,6 @@ function renderGifts(isOwner) {
     }).join('');
 }
 
-// Stats (Only for Guests)
 function updateStats() {
     const purchased = gifts.filter(g => g.checked).length;
     const total = gifts.reduce((sum, g) => sum + (g.price || 0), 0);
@@ -242,9 +265,7 @@ function updateStats() {
 // --- GLOBAL ACTIONS ---
 
 window.toggleGift = async (id) => {
-    // Security check: Owner cannot toggle their own gifts
     if (currentUser.uid === currentViewingUid) return;
-
     const gift = gifts.find(g => g.id === id);
     if (gift) {
         const ref = doc(db, "users", currentViewingUid, "gifts", id);
@@ -253,18 +274,14 @@ window.toggleGift = async (id) => {
 };
 
 window.deleteGift = async (id) => {
-    // Security check: Only owner can delete their own gifts
     if (currentUser.uid !== currentViewingUid) return;
-
     if (confirm("Opravdu smazat tento dárek?")) {
         await deleteDoc(doc(db, "users", currentUser.uid, "gifts", id));
     }
 };
 
 document.getElementById('addBtn').addEventListener('click', async () => {
-    // Only works if viewing my own list
     if (currentUser.uid !== currentViewingUid) return;
-
     const name = document.getElementById('giftName').value.trim();
     if (!name) return;
 
@@ -278,14 +295,12 @@ document.getElementById('addBtn').addEventListener('click', async () => {
         createdAt: serverTimestamp()
     });
 
-    // Reset inputs
     document.getElementById('giftName').value = '';
     document.getElementById('recipient').value = '';
     document.getElementById('price').value = '';
     document.getElementById('link').value = '';
 });
 
-// Filter Listeners
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));

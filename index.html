@@ -11,12 +11,12 @@
         <div class="nav-logo">🎁 SecretWishlist</div>
         <div class="nav-links">
             <div id="loggedOutLinks">
-                <button class="nav-btn" id="openLoginBtn">Login</button>
-                <button class="nav-btn highlight" id="openRegisterBtn">Register</button>
+                <button class="nav-btn" id="openLoginBtn">Přihlásit</button>
+                <button class="nav-btn highlight" id="openRegisterBtn">Registrovat</button>
             </div>
             <div id="loggedInLinks" style="display: none;">
-                <span id="userEmailDisplay">user@email.com</span>
-                <button class="nav-btn logout" id="logoutBtn">Logout</button>
+                <span id="userEmailDisplay">user</span>
+                <button class="nav-btn logout" id="logoutBtn">Odhlásit</button>
             </div>
         </div>
     </nav>
@@ -98,9 +98,11 @@
             <span class="close-modal">&times;</span>
             <h2 id="modalTitle">Login</h2>
             <form id="authForm">
+                <input type="text" id="authUsername" class="input-field" placeholder="Tvoje Jméno (např. Honza)" style="display:none; width: 100%; margin-bottom: 1rem;">
+                
                 <input type="email" id="authEmail" class="input-field" placeholder="Email" required style="width: 100%; margin-bottom: 1rem;">
-                <input type="password" id="authPassword" class="input-field" placeholder="Password" required style="width: 100%; margin-bottom: 1rem;">
-                <button type="submit" class="add-btn" style="width: 100%;">Vstoupit</button>
+                <input type="password" id="authPassword" class="input-field" placeholder="Heslo" required style="width: 100%; margin-bottom: 1rem;">
+                <button type="submit" class="add-btn" style="width: 100%;">Pokračovat</button>
             </form>
             <p id="authError" style="color: var(--neon-pink); margin-top: 1rem;"></p>
         </div>
