@@ -1,5 +1,5 @@
 /* =========================================
-   1. CORE VARIABLES & RESET
+   1. RESET & CORE VARIABLES
    ========================================= */
 * {
     margin: 0;
@@ -8,7 +8,6 @@
 }
 
 :root {
-    /* Cyberpunk Palette */
     --primary-purple: #9d4edd;
     --deep-purple: #240046;
     --neon-pink: #ff007f;
@@ -30,7 +29,7 @@ body {
 }
 
 /* =========================================
-   2. NAVBAR (The Fix for Buttons)
+   2. NAVBAR
    ========================================= */
 .navbar {
     display: flex;
@@ -43,8 +42,7 @@ body {
     top: 0;
     z-index: 100;
     backdrop-filter: blur(10px);
-    height: 90px; /* Taller navbar for better vertical centering */
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    height: 90px;
 }
 
 .nav-logo {
@@ -52,7 +50,6 @@ body {
     font-weight: 800;
     color: var(--primary-purple);
     text-shadow: 0 0 15px var(--accent-glow);
-    letter-spacing: 1px;
 }
 
 .nav-links {
@@ -61,25 +58,22 @@ body {
     align-items: center;
 }
 
-/* FIX: Target the container holding the buttons specifically */
+/* FIX: Force gap between Login/Register buttons */
 #loggedOutLinks {
     display: flex;
-    align-items: center;
-    gap: 2rem; /* HUGE GAP between Login and Register */
+    gap: 1.5rem;
 }
 
-/* FIX: Target the container holding User & Logout */
+/* FIX: Force gap between Username and Logout */
 #loggedInLinks {
     display: flex;
     align-items: center;
-    gap: 2rem; /* Matches the gap above for consistency */
+    gap: 1.5rem;
 }
 
 #userEmailDisplay {
     color: var(--text-muted);
-    font-size: 1rem;
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
 .nav-btn {
@@ -89,28 +83,22 @@ body {
     color: var(--text-main);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
+    transition: 0.3s;
     font-weight: 600;
-    letter-spacing: 0.5px;
 }
 
 .nav-btn:hover {
     background: var(--primary-purple);
     box-shadow: 0 0 15px var(--accent-glow);
-    transform: translateY(-2px);
 }
 
 .nav-btn.highlight {
     background: var(--primary-purple);
     color: white;
-    border: 1px solid var(--primary-purple);
 }
-
 .nav-btn.highlight:hover {
     background: var(--neon-pink);
     border-color: var(--neon-pink);
-    box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
 }
 
 /* =========================================
@@ -122,18 +110,17 @@ body {
     padding: 3rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 2.5rem; /* Space between big sections */
+    gap: 2rem;
 }
 
-/* Header Section */
+/* Header */
 .header {
     text-align: center;
-    padding: 2.5rem 2rem;
+    padding: 2.5rem;
     background: rgba(30, 30, 30, 0.6);
     border-radius: 20px;
     border: 1px solid var(--primary-purple);
     box-shadow: 0 0 30px rgba(157, 78, 221, 0.15);
-    margin-bottom: 1rem;
 }
 
 .header h1 {
@@ -142,22 +129,27 @@ body {
     background: linear-gradient(135deg, #fff 0%, var(--primary-purple) 50%, var(--neon-pink) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 2px rgba(157, 78, 221, 0.5));
 }
 
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1.1em;
+/* Dropdown Fix */
+#userSelector {
+    background-color: #000;
+    color: white;
+    text-align: center;
+    margin: 10px auto;
+    display: block;
+    width: 100%;
+    max-width: 300px;
 }
 
 /* =========================================
-   4. STATS & INPUTS (Updated)
+   4. STATS (Fixing the Overlap)
    ========================================= */
 .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
-    /* FIX: Push everything below this container down */
+    /* CRITICAL FIX: Pushes the filters away */
     margin-bottom: 3rem; 
 }
 
@@ -173,44 +165,86 @@ body {
 .stat-card-2 { border-bottom: 4px solid var(--neon-pink); }
 .stat-card-3 { border-bottom: 4px solid #fff; }
 
-.stat-label { font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-.stat-value { font-size: 2em; font-weight: 800; margin-top: 0.8rem; color: white; }
+.stat-value { font-size: 2em; font-weight: 800; margin-top: 0.5rem; color: white; }
 
+/* =========================================
+   5. INPUTS (Fixing the Squish)
+   ========================================= */
 .input-section {
     background: var(--card-surface);
     padding: 2rem;
     border-radius: 15px;
     border: 1px solid var(--primary-purple);
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    /* FIX: Push the gift list down when this is visible */
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
-/* ... (keep your existing .input-section h2, .input-group, etc.) ... */
+.input-section h2 {
+    color: var(--primary-purple);
+    margin-bottom: 1.5rem;
+}
+
+/* CRITICAL FIX: Stack inputs vertically */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-field {
+    padding: 1rem;
+    background: #0f0f0f;
+    border: 1px solid var(--border-color);
+    color: white;
+    border-radius: 10px;
+    font-size: 1rem;
+    width: 100%; /* Force full width */
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--neon-pink);
+    background: #1a1a1a;
+}
+
+.add-btn {
+    padding: 1rem;
+    background: linear-gradient(90deg, var(--primary-purple), var(--neon-pink));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 0.5rem;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 0, 127, 0.4);
+}
 
 /* =========================================
-   FILTERS (Updated - The Main Fix)
+   6. FILTERS (Positioning Fix)
    ========================================= */
 .filter-section {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    /* FIX: Big margins to separate it from Stats (top) and List (bottom) */
-    margin-top: 1rem; 
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
+    /* Ensure it doesn't float up */
+    position: relative;
+    z-index: 10;
 }
 
 .filter-btn {
-    padding: 0.8rem 1.5rem; /* Made buttons slightly bigger/easier to click */
-    background: var(--card-surface); /* Gave them a background color so they stand out */
+    padding: 0.6rem 1.5rem;
+    background: var(--card-surface);
     border: 1px solid var(--border-color);
     color: var(--text-muted);
     border-radius: 25px;
     cursor: pointer;
-    font-size: 0.95em;
     font-weight: 600;
     transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Added shadow to lift them up */
 }
 
 .filter-btn:hover, .filter-btn.active {
@@ -218,180 +252,75 @@ body {
     color: white;
     border-color: var(--primary-purple);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(157, 78, 221, 0.4);
 }
 
 /* =========================================
-   5. GIFT LIST (The Fix for Crowding)
+   7. GIFT LIST
    ========================================= */
-.gifts-section {
-    min-height: 200px;
-}
-
 .gifts-list {
-    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem; /* More space between each gift card */
+    gap: 1rem;
+    list-style: none;
 }
 
 .gift-item {
     background: var(--card-surface);
-    /* FIX: More padding inside the card */
-    padding: 1.5rem 2rem; 
-    border-radius: 16px;
+    padding: 1.5rem;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    /* FIX: Big horizontal gap between Checkbox, Text, and Price */
-    gap: 2rem; 
+    gap: 1.5rem;
     border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.gift-item:hover {
-    transform: translateY(-3px);
-    border-color: var(--primary-purple);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.gift-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* FIX: More vertical space between Gift Name and Recipient Name */
-    gap: 0.6rem; 
-}
-
-.gift-name {
-    font-weight: 800;
-    font-size: 1.3em;
-    color: white;
-    line-height: 1.2;
-}
-
-.gift-details {
-    font-size: 1em;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.gift-price {
-    font-weight: 800;
-    font-size: 1.2em;
-    color: var(--neon-pink);
-    text-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
-    white-space: nowrap; /* Prevents price breaking lines */
-}
-
-/* Checkbox Styling */
-.gift-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.gift-checkbox input {
-    width: 28px; /* Bigger checkbox */
-    height: 28px;
-    cursor: pointer;
-    accent-color: var(--neon-pink);
-    transition: 0.2s;
-}
-
-/* Buttons inside Gift Item */
-.link-btn, .delete-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    width: 40px; /* Bigger buttons */
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 1.2rem;
-    transition: 0.2s;
-}
-
-.link-btn:hover { border-color: var(--primary-purple); color: var(--primary-purple); background: rgba(157, 78, 221, 0.1); }
-.delete-btn:hover { border-color: red; color: red; background: rgba(255, 0, 0, 0.1); }
-
-/* Completed State */
-.gift-item.checked {
-    opacity: 0.5;
-    background: #111;
-    border-color: #222;
-}
-.gift-item.checked .gift-name { text-decoration: line-through; }
-
-/* Owner View (Surprise Mode) */
-.gift-item.owner-view { border-color: var(--primary-purple); }
-.gift-item.owner-view .gift-checkbox { opacity: 0.1; pointer-events: none; filter: grayscale(100%); }
-
-/* Filters */
-.filter-section {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-bottom: 1rem;
-}
-.filter-btn {
-    padding: 0.6rem 1.2rem;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-muted);
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 0.9em;
     transition: 0.3s;
 }
-.filter-btn:hover, .filter-btn.active {
-    background: var(--primary-purple);
-    color: white;
-    border-color: var(--primary-purple);
+
+.gift-info { flex: 1; }
+.gift-name { font-weight: 800; font-size: 1.2em; color: white; }
+.gift-details { color: var(--text-muted); font-size: 0.9em; margin-top: 4px; }
+.gift-price { font-weight: bold; color: var(--neon-pink); min-width: 80px; text-align: right; }
+
+.gift-checkbox input {
+    width: 24px; height: 24px; cursor: pointer; accent-color: var(--neon-pink);
 }
 
-/* =========================================
-   6. UTILITIES (Modal & Snow)
-   ========================================= */
-.empty-state { text-align: center; color: var(--text-muted); padding: 3rem; font-size: 1.2em; font-style: italic; }
+.link-btn, .delete-btn {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-color); border-radius: 8px;
+    color: var(--text-muted); text-decoration: none; cursor: pointer; background: transparent;
+}
+.link-btn:hover { color: var(--primary-purple); border-color: var(--primary-purple); }
+.delete-btn:hover { color: red; border-color: red; }
 
-/* Modal */
+/* States */
+.gift-item.checked { opacity: 0.5; background: #111; }
+.gift-item.checked .gift-name { text-decoration: line-through; }
+.gift-item.owner-view { border-color: var(--primary-purple); }
+.gift-item.owner-view .gift-checkbox { opacity: 0.2; pointer-events: none; }
+
+.empty-state { text-align: center; color: var(--text-muted); padding: 3rem; }
+
+/* =========================================
+   8. MODAL & SNOW
+   ========================================= */
 .modal {
     display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-    width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
 }
 .modal-content {
     background: var(--card-surface); margin: 10% auto; padding: 3rem;
     border: 1px solid var(--primary-purple); border-radius: 20px; width: 90%; max-width: 450px;
-    position: relative; box-shadow: 0 0 50px rgba(157, 78, 221, 0.3);
 }
-.close-modal { float: right; font-size: 30px; cursor: pointer; color: white; transition: 0.3s; }
-.close-modal:hover { color: var(--neon-pink); transform: rotate(90deg); }
+.close-modal { float: right; font-size: 28px; cursor: pointer; color: white; }
 
-/* Snow Animation */
 .snowflakes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
 .snowflake { position: absolute; top: -10px; color: var(--primary-purple); opacity: 0.3; animation: snowfall 15s linear infinite; }
-.snowflake:nth-child(1) { left: 10%; animation-duration: 12s; font-size: 1.5rem; }
-.snowflake:nth-child(2) { left: 30%; animation-duration: 10s; font-size: 1rem; }
-.snowflake:nth-child(3) { left: 50%; animation-duration: 14s; font-size: 0.8rem; }
-.snowflake:nth-child(4) { left: 70%; animation-duration: 11s; font-size: 1.2rem; }
-.snowflake:nth-child(5) { left: 90%; animation-duration: 13s; font-size: 1rem; }
-@keyframes snowfall { 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+@keyframes snowfall { 100% { transform: translateY(100vh); opacity: 0; } }
 
-/* Mobile Optimization */
+/* Mobile */
 @media (max-width: 768px) {
-    .navbar { padding: 0 1rem; height: auto; flex-direction: column; gap: 1rem; padding-bottom: 1rem; }
-    .nav-links { width: 100%; justify-content: center; }
-    #loggedOutLinks, #loggedInLinks { width: 100%; justify-content: center; gap: 1rem; }
-    .gift-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .navbar { padding: 1rem; height: auto; flex-direction: column; gap: 1rem; }
+    .gift-item { flex-direction: column; align-items: flex-start; }
     .gift-price { align-self: flex-end; }
-    .nav-logo { margin-top: 1rem; }
 }
