@@ -7,106 +7,102 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-logo">🎁 GiftChekr</div>
+        <div class="nav-links">
+            <div id="loggedOutLinks">
+                <button class="nav-btn" id="openLoginBtn">Login</button>
+                <button class="nav-btn highlight" id="openRegisterBtn">Register</button>
+            </div>
+            <div id="loggedInLinks" style="display: none;">
+                <span id="userEmailDisplay">user@email.com</span>
+                <button class="nav-btn logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </nav>
+
     <div class="app-container">
         <div class="snowflakes">
-            <div class="snowflake">❄️</div>
-            <div class="snowflake">❄️</div>
-            <div class="snowflake">❄️</div>
-            <div class="snowflake">❄️</div>
-            <div class="snowflake">❄️</div>
+             <div class="snowflake">18</div>
+            <div class="snowflake">18</div>
+            <div class="snowflake">18</div>
+            <div class="snowflake">18</div>
+            <div class="snowflake">18</div>
         </div>
 
         <header class="header">
-            <h1>🎄 SEZNAM VÁNOČNÍCH DÁRKŮ 🎄</h1>
-            <p class="subtitle">✨ Šťastné a veselé Vánoce ✨</p>
+            <h1>😁 seznam dárků na 18 narozeniny honzy 😁</h1>
+            <p class="subtitle">✨ ||| ✨</p>
         </header>
 
-        <div class="stats-container">
-            <div class="stat-card stat-card-1">
-                <div class="stat-label">🎁 Počet dárků</div>
-                <div class="stat-value" id="totalGifts">0</div>
+        <div id="appContent" style="display: none;">
+            <div class="stats-container">
+                <div class="stat-card stat-card-1">
+                    <div class="stat-label">🎁 Počet dárků</div>
+                    <div class="stat-value" id="totalGifts">0</div>
+                </div>
+                <div class="stat-card stat-card-2">
+                    <div class="stat-label">✅ Koupeno dárků</div>
+                    <div class="stat-value" id="purchasedCount">0</div>
+                </div>
+                <div class="stat-card stat-card-3">
+                    <div class="stat-label">💰 Celková cena dárků</div>
+                    <div class="stat-value" id="totalCost">0.00 Kč</div>
+                </div>
             </div>
-            <div class="stat-card stat-card-2">
-                <div class="stat-label">✅ Koupeno dárků</div>
-                <div class="stat-value" id="purchasedCount">0</div>
+
+            <div class="input-section">
+                <h2>🎀 Přidejte vaše vysněné dárky 🎀</h2>
+                <div class="input-group">
+                    <input type="text" id="giftName" placeholder="Jméno dárku" class="input-field" />
+                    <input type="text" id="recipient" placeholder="Pro koho to je?" class="input-field" />
+                    <input type="number" id="price" placeholder="Cena (Kč)" class="input-field" step="0.01" min="0" />
+                    <input type="url" id="link" placeholder="Odkaz na dárek" class="input-field" />
+                    <select id="category" class="input-field">
+                        <option value="general">🎁 Obecné</option>
+                        <option value="electronics">📱 Elektronika</option>
+                        <option value="books">📚 Knihy</option>
+                        <option value="clothing">👕 Oblečení</option>
+                        <option value="toys">🧸 Hračky</option>
+                        <option value="home">🏠 Dům</option>
+                        <option value="sports">⚽ Sport</option>
+                    </select>
+                    <button id="addBtn" class="add-btn">🎉 Přidat dárek</button>
+                </div>
             </div>
-            <div class="stat-card stat-card-3">
-                <div class="stat-label">💰 Celková cena dárků</div>
-                <div class="stat-value" id="totalCost">0.00 Kč</div>
+
+            <div class="filter-section">
+                <button class="filter-btn active" data-filter="all">✌️ Všechny dárky (<span class="filter-count" data-filter="all">0</span>)</button>
+                <button class="filter-btn" data-filter="unchecked">🛍️ Stále nakupuji (<span class="filter-count" data-filter="unchecked">0</span>)</button>
+                <button class="filter-btn" data-filter="checked">✨ Koupeno! (<span class="filter-count" data-filter="checked">0</span>)</button>
+            </div>
+
+            <div class="gifts-section">
+                <div class="empty-state" id="emptyState">
+                    <p> Začněte přidávat dárky <3 </p>
+                </div>
+                <ul class="gifts-list" id="giftsList"></ul>
             </div>
         </div>
 
-        <div class="progress-section">
-            <div class="progress-label">🎅 Klik dárků zbývá 🤶</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <p class="progress-text"><span id="progressText">0 of 0</span> dárků zabaleno!</p>
-        </div>
-
-        <div class="input-section">
-            <h2>🎀 Přidejte vaše vysněné dárky 🎀</h2>
-            <div class="input-group">
-                <input
-                    type="text"
-                    id="giftName"
-                    placeholder="Jméno dárku"
-                    class="input-field"
-                />
-                <input
-                    type="text"
-                    id="recipient"
-                    placeholder="Pro koho to je?"
-                    class="input-field"
-                />
-                <input
-                    type="number"
-                    id="price"
-                    placeholder="Cena (Kč)"
-                    class="input-field"
-                    step="0.01"
-                    min="0"
-                />
-                <input
-                    type="url"
-                    id="link"
-                    placeholder="Odkaz na dárek"
-                    class="input-field"
-                />
-                <select id="category" class="input-field">
-                    <option value="general">🎁 Obecné</option>
-                    <option value="electronics">📱 Elektronika</option>
-                    <option value="books">📚 Knihy</option>
-                    <option value="clothing">👕 Oblečení</option>
-                    <option value="toys">🧸 Hračky</option>
-                    <option value="home">🏠 Dům</option>
-                    <option value="sports">⚽ Sport</option>
-                </select>
-                <button id="addBtn" class="add-btn">🎉 Add Gift</button>
-            </div>
-        </div>
-
-        <div class="filter-section">
-            <button class="filter-btn active" data-filter="all">
-                🎄 Všechny (<span class="filter-count" data-filter="all">0</span>)
-            </button>
-            <button class="filter-btn" data-filter="unchecked">
-                🛍️ Stále nakupuji (<span class="filter-count" data-filter="unchecked">0</span>)
-            </button>
-            <button class="filter-btn" data-filter="checked">
-                ✨ Koupeno! (<span class="filter-count" data-filter="checked">0</span>)
-            </button>
-        </div>
-
-        <div class="gifts-section">
-            <div class="empty-state" id="emptyState">
-                <p>🎅 Ho ho ho! Začněte přidávat dárky <3 🎅</p>
-            </div>
-            <ul class="gifts-list" id="giftsList"></ul>
+        <div id="loginMessage" style="text-align: center; padding: 2rem;">
+            <h2>🔐 Please Login to view and manage your list</h2>
         </div>
     </div>
 
-    <!-- Mark script.js as a module -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modalTitle">Login</h2>
+            <form id="authForm">
+                <input type="email" id="authEmail" class="input-field" placeholder="Email" required style="width: 100%; margin-bottom: 1rem;">
+                <input type="password" id="authPassword" class="input-field" placeholder="Password" required style="width: 100%; margin-bottom: 1rem;">
+                <button type="submit" class="add-btn" style="width: 100%;">Submit</button>
+            </form>
+            <p id="authError" style="color: var(--neon-pink); margin-top: 1rem;"></p>
+        </div>
+    </div>
+
     <script type="module" src="script.js"></script>
 </body>
 </html>
