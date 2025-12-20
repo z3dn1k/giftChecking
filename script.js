@@ -299,25 +299,43 @@ window.deleteGift = async (id) => {
 };
 
 document.getElementById('addBtn').addEventListener('click', async () => {
+    // Only works if viewing my own list
     if (currentUser.uid !== currentViewingUid) return;
+
     const name = document.getElementById('giftName').value.trim();
     if (!name) return;
+
+    // --- NEW LINK FIX START ---
+    let linkValue = document.getElementById('link').value.trim();
+    
+    // If there is a link, and it doesn't start with http:// or https://, add https://
+    if (linkValue && !linkValue.startsWith('http://') && !linkValue.startsWith('https://')) {
+        linkValue = 'https://' + linkValue;
+    }
+    // --- NEW LINK FIX END ---
 
     await addDoc(collection(db, "users", currentUser.uid, "gifts"), {
         name,
         recipient: document.getElementById('recipient').value,
         price: parseFloat(document.getElementById('price').value) || 0,
-        link: document.getElementById('link').value,
+        link: linkValue, // Use the fixed link variable here
         category: document.getElementById('category').value,
         checked: false,
         createdAt: serverTimestamp()
     });
 
+    // Reset inputs
     document.getElementById('giftName').value = '';
     document.getElementById('recipient').value = '';
     document.getElementById('price').value = '';
     document.getElementById('link').value = '';
 });
+
+    document.getElementById('giftName').value = '';
+    document.getElementById('recipient').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('link').value = '';
+
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
